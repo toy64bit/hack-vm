@@ -31,15 +31,35 @@ impl<R: BufRead> Scanner<R> {
       },
     );
     map.insert(
-      String::from("constant"),
+      String::from("print"),
       Token {
-        kind: TokenKind::Constatnt,
+        kind: TokenKind::Print,
       },
     );
+
     map.insert(
       String::from("add"),
       Token {
         kind: TokenKind::Add,
+      },
+    );
+
+    map.insert(
+      String::from("local"),
+      Token {
+        kind: TokenKind::Local,
+      },
+    );
+    map.insert(
+      String::from("static"),
+      Token {
+        kind: TokenKind::Static,
+      },
+    );
+    map.insert(
+      String::from("constant"),
+      Token {
+        kind: TokenKind::Constatnt,
       },
     );
 

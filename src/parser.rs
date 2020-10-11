@@ -1,4 +1,4 @@
-use crate::ast::{Segment, Stmt};
+use crate::ast::{DebugInfo, Segment, Stmt};
 use crate::token::{Token, TokenKind};
 
 pub struct Parser {
@@ -14,34 +14,58 @@ impl Parser {
 
   pub fn parse(&mut self, tokens: &Vec<Vec<Token>>) -> Option<Vec<Stmt>> {
     for token_list in tokens {
-      match token_list.first() {
+      let stmt = match token_list.first() {
         Some(op) => match op.kind {
           TokenKind::Push => {
             if token_list.len() != 3 {
               println!("invalid number of tokens found...");
+              return None;
             }
             let seg = token_list[1];
             let idx = token_list[2];
-            let push_stmt = Stmt::Push {
+
+            Stmt::Push {
               segment: self.parse_segment(seg).expect("invalid segment found"),
               index: self.parse_index(idx).expect("invalid index found"),
-            };
-            self.stmt_list.push(push_stmt)
+            }
           }
+
           TokenKind::Pop => {
             if token_list.len() != 3 {
               println!("invalid number of tokens found...");
+              return None;
             }
             let seg = token_list[1];
             let idx = token_list[2];
-            let push_stmt = Stmt::Pop {
+
+            Stmt::Pop {
               segment: self.parse_segment(seg).expect("invalid segment found"),
               index: self.parse_index(idx).expect("invalid index found"),
-            };
-            self.stmt_list.push(push_stmt)
+            }
           }
-          TokenKind::Add => self.stmt_list.push(Stmt::Add),
-          TokenKind::Sub => self.stmt_list.push(Stmt::Add),
+
+          TokenKind::Print => {
+            if token_list.len() == 3 {
+              let seg = token_list[1];
+              let idx = token_list[2];
+              Stmt::Print {
+                info: DebugInfo::Memory {
+                  segment: self.parse_segment(seg).expect("invalid segment found"),
+                  index: self.parse_index(idx).expect("invalid index found"),
+                },
+              }
+            } else if token_list.len() == 1 {
+              Stmt::Print {
+                info: DebugInfo::Stack,
+              }
+            } else {
+              println!("invalid number of tokens found...");
+              return None;
+            }
+          }
+
+          TokenKind::Add => Stmt::Add,
+          TokenKind::Sub => Stmt::Add,
           _ => {
             println!("invalid token found as an operation...");
             return None;
@@ -51,8 +75,11 @@ impl Parser {
           println!("no tokens...");
           return None;
         }
-      }
+      };
+
+      self.stmt_list.push(stmt);
     }
+
     Some(self.stmt_list.clone())
   }
 

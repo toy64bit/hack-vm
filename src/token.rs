@@ -2,11 +2,14 @@
 pub enum TokenKind {
   Push,
   Pop,
+  Print,
+
   Add,
   Sub,
 
   Argment,
   Local,
+  Static,
   Constatnt,
   This,
   That,

@@ -6,7 +6,8 @@ mod token;
 
 use std::env;
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::prelude::*;
+use std::io::{BufRead, BufReader, BufWriter};
 
 use codegen::Codegen;
 use parser::Parser;
@@ -32,9 +33,17 @@ fn main() -> std::io::Result<()> {
     let mut codegen = Codegen::new(&stmt_list);
     codegen.run();
 
+    let out_file = File::create("out.s")?;
+    let mut writer = BufWriter::new(out_file);
     for line in codegen.asm_list {
-        println!("{}", line);
+        writer.write_all(line.as_bytes())?;
     }
+    writer.flush()?;
+    // file.flush()?;
+
+    // for line in codegen.asm_list {
+    //     println!("{}", line);
+    // }
 
     // let path = if let Some(p) = output {
     //     PathBuf::from(p.as_ref())
