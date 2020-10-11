@@ -1,21 +1,18 @@
-use crate::token;
-
-pub trait Node {
-  // fn op(&self) -> Op;
-  // fn lhs(&self) -> Box<Node>;
-  // fn rhs(&self) -> Box<Node>;
+#[derive(Clone, Debug)]
+pub enum Segment {
+  Argment,
+  Local,
+  Constant,
+  This,
+  That,
+  Pointer,
+  Temp,
 }
 
-pub struct Add {
-  // kind:
-  lhs: Box<Node>,
-  rhs: Box<Node>,
+#[derive(Clone, Debug)]
+pub enum Stmt {
+  Push { segment: Segment, index: i32 },
+  Pop { segment: Segment, index: i32 },
+  Add,
+  Sub,
 }
-
-impl Node for Add {}
-
-// pub struct Node {
-//   op: Op,
-//   lhs: Box<Node>,
-//   rhs: Box<Node>,
-// }

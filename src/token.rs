@@ -1,8 +1,9 @@
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum TokenKind {
-  Eof,
   Push,
   Pop,
+  Add,
+  Sub,
 
   Argment,
   Local,
@@ -12,14 +13,36 @@ pub enum TokenKind {
   Pointer,
   Temp,
 
-  Add,
-  Sub,
-  Mul,
-
   Num(i32),
+  Eof,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Token {
   pub kind: TokenKind,
 }
+
+use TokenKind::*;
+
+// impl Token {
+//   pub fn is_op(&self) -> bool {
+//     match self.kind {
+//       Push | Pop | Add | Sub | Mul => true,
+//       _ => false,
+//     }
+//   }
+
+//   pub fn is_segment(&self) -> bool {
+//     match self.kind {
+//       Argment | Local | Constatnt | This | That | Pointer | Temp => true,
+//       _ => false,
+//     }
+//   }
+
+//   pub fn is_num(&self) -> bool {
+//     match self.kind {
+//       Num(_) => true,
+//       _ => false,
+//     }
+//   }
+// }

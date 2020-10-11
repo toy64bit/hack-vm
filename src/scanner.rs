@@ -12,7 +12,7 @@ pub struct Scanner<R> {
   line_num: usize,
   current_line: String,
   token_map: HashMap<String, Token>,
-  tokens: Vec<Token>,
+  tokens: Vec<Vec<Token>>,
 }
 
 impl<R: BufRead> Scanner<R> {
@@ -53,7 +53,7 @@ impl<R: BufRead> Scanner<R> {
     }
   }
 
-  pub fn scan(&mut self) -> Result<Vec<Token>, &str> {
+  pub fn scan(&mut self) -> Result<Vec<Vec<Token>>, &str> {
     loop {
       let mut line = String::new();
       let res = self.reader.read_line(&mut line);
@@ -61,14 +61,16 @@ impl<R: BufRead> Scanner<R> {
       match res {
         Ok(0) => break,
         Ok(_) => {
-          self.line_num += 1;
           let l = line.trim().to_string();
           if line.starts_with("//") {
             continue;
           }
           self.current_line = l;
-          self.parse_line();
+          if let Err(msg) = self.parse_line() {
+            panic!("Parse error: {}", msg);
+          }
           self.reset_position();
+          self.line_num += 1;
         }
         Err(..) => return Err("unexpected error..."),
       }
@@ -78,41 +80,46 @@ impl<R: BufRead> Scanner<R> {
   }
 
   pub fn parse_line(&mut self) -> Result<(), &str> {
-    let mut word = String::new();
-    let mut word_list = Vec::new();
+    let mut keyword = String::new();
+    let mut keyword_list = Vec::new();
 
     while !self.is_eof() {
       if self.is_ignorable() {
-        if word.len() > 0 {
-          word_list.push(word);
-          word = String::new();
+        if keyword.len() > 0 {
+          keyword_list.push(keyword);
+          keyword = String::new();
         }
         self.consume();
       } else {
         let c = self.current().unwrap();
-        word.push(c);
+        keyword.push(c);
         self.consume();
       }
     }
-    // push last word
-    if word.len() > 0 {
-      word_list.push(word);
+    // push last keyword
+    if keyword.len() > 0 {
+      keyword_list.push(keyword);
+    }
+
+    if keyword_list.len() == 0 {
+      return Ok(());
     }
 
     let is_num = Regex::new(r"\d+").unwrap();
     let is_alpha = Regex::new(r"([a-z]|[A-Z])+").unwrap();
+    let mut token_list = Vec::new();
 
-    for word in word_list {
-      if is_num.is_match(&word) {
-        let num = word.parse::<i32>().unwrap();
-        self.tokens.push(Token {
+    for keyword in keyword_list {
+      if is_num.is_match(&keyword) {
+        let num = keyword.parse::<i32>().unwrap();
+        token_list.push(Token {
           kind: TokenKind::Num(num),
         });
       }
-      if is_alpha.is_match(&word) {
-        match self.token_map.get(&word) {
+      if is_alpha.is_match(&keyword) {
+        match self.token_map.get(&keyword) {
           Some(tok) => {
-            self.tokens.push(tok.clone());
+            token_list.push(tok.clone());
           }
           None => {}
         }
@@ -121,6 +128,7 @@ impl<R: BufRead> Scanner<R> {
       self.consume();
     }
 
+    self.tokens.push(token_list.clone());
     Ok(())
   }
 
