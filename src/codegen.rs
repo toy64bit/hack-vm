@@ -1,3 +1,6 @@
+use std::io::prelude::*;
+use std::io::BufWriter;
+
 use crate::ast::{DebugInfo, Segment, Stmt};
 
 const word_size: i32 = 4;
@@ -29,6 +32,16 @@ impl<'a> Codegen<'a> {
       self.gen(stmt);
     }
     self.gen_main_end();
+  }
+
+  pub fn save(&mut self, file_name: &str) {
+    let file_name = String::from(file_name) + file_name;
+    let out_file = File::create(file_name)?;
+    let mut writer = BufWriter::new(out_file);
+    for line in self.asm_list {
+      writer.write_all(line.as_bytes())?;
+    }
+    writer.flush()?;
   }
 
   pub fn gen_init(&mut self) {

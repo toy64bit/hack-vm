@@ -1,0 +1,5 @@
+// Pushes and adds two constants and print the result on stack
+push constant 7
+push constant 8
+add
+print
